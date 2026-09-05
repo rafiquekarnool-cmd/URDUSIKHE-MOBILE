@@ -1,10 +1,7 @@
-name: Build UrduSikhe APK
+name: Build Android APK
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -23,39 +20,46 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
-      - name: Check Android project
-        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Check project files
         run: |
-          echo "Checking Android project..."
-          ls -la
-          echo "Checking app folder..."
-          ls -la app
-          echo "Checking Gradle wrapper..."
-          ls -la gradlew
+          echo "Current directory:"
+          pwd
+          echo "Repository files:"
+          find . -maxdepth 3 -type f | sort
 
-      - name: Make Gradle executable
-        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
-        run: chmod +x gradlew
+      - name: Find Android project
+        run: |
+          SETTINGS_FILE=$(find . -name "settings.gradle" -o -name "settings.gradle.kts" | head -n 1)
 
-      - name: Clean project
-        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
-        run: ./gradlew clean --stacktrace
+          if [ -z "$SETTINGS_FILE" ]; then
+            echo "ERROR: settings.gradle or settings.gradle.kts not found!"
+            exit 1
+          fi
+
+          PROJECT_DIR=$(dirname "$SETTINGS_FILE")
+          echo "Android project found at: $PROJECT_DIR"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Build Debug APK
-        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          cd "$PROJECT_DIR"
+          echo "Building Android project..."
+          gradle assembleDebug --stacktrace --no-daemon
 
       - name: Find APK
-        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
         run: |
-          echo "APK files:"
-          find app/build/outputs/apk -type f -name "*.apk" -print
+          echo "Searching for APK..."
+          find "$PROJECT_DIR" -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: UrduSikhe-APK
-          path: "UrduSikhe_APK_Build_READY_FIXED (1)/app/build/outputs/apk/**/*.apk"
+          path: "**/app/build/outputs/apk/**/*.apk"
           if-no-files-found: error
