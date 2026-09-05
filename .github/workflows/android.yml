@@ -4,31 +4,58 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout project
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '17'
-          distribution: 'temurin'
+          cache: gradle
+
+      - name: Check Android project
+        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
+        run: |
+          echo "Checking Android project..."
+          ls -la
+          echo "Checking app folder..."
+          ls -la app
+          echo "Checking Gradle wrapper..."
+          ls -la gradlew
 
       - name: Make Gradle executable
-        run: chmod +x "UrduSikhe_APK_Build_READY_FIXED (1)/gradlew"
+        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
+        run: chmod +x gradlew
 
-      - name: Build APK
+      - name: Clean project
+        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
+        run: ./gradlew clean --stacktrace
+
+      - name: Build Debug APK
         working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
         run: ./gradlew assembleDebug --stacktrace
+
+      - name: Find APK
+        working-directory: "UrduSikhe_APK_Build_READY_FIXED (1)"
+        run: |
+          echo "APK files:"
+          find app/build/outputs/apk -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: UrduSikhe-APK
-          path: "UrduSikhe_APK_Build_READY_FIXED (1)/app/build/outputs/apk/debug/*.apk"
+          path: "UrduSikhe_APK_Build_READY_FIXED (1)/app/build/outputs/apk/**/*.apk"
+          if-no-files-found: error
