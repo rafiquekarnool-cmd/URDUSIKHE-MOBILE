@@ -46,6 +46,11 @@ jobs:
           echo "Android project found at: $PROJECT_DIR"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
+      - name: Prepare launcher icon
+        run: |
+          mkdir -p "$PROJECT_DIR/app/src/main/res/drawable-nodpi"
+          base64 --decode "app_icon.webp.b64" > "$PROJECT_DIR/app/src/main/res/drawable-nodpi/app_icon.webp"
+
       - name: Build Debug APK
         run: |
           cd "$PROJECT_DIR"
