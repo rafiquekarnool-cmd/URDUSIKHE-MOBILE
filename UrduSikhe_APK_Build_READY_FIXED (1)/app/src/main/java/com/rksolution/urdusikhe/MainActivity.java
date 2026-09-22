@@ -1,6 +1,7 @@
 package com.rksolution.urdusikhe;
 
 import android.app.Activity;
+import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
@@ -57,9 +58,11 @@ public class MainActivity extends Activity {
         root.addView(webView, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
+        boolean isDebuggable =
+                (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         bannerAd = new AdView(this);
         bannerAd.setAdSize(AdSize.BANNER);
-        bannerAd.setAdUnitId(BuildConfig.DEBUG
+        bannerAd.setAdUnitId(isDebuggable
                 ? TEST_BANNER_AD_UNIT_ID
                 : LIVE_BANNER_AD_UNIT_ID);
         root.addView(bannerAd, new LinearLayout.LayoutParams(
