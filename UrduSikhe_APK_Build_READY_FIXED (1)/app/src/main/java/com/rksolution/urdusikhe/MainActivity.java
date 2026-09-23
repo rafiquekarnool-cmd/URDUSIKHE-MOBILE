@@ -9,6 +9,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -68,7 +69,13 @@ public class MainActivity extends Activity {
         root.addView(bannerAd, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
-        bannerAd.loadAd(new AdRequest.Builder().build());
+
+        Bundle nonPersonalizedAds = new Bundle();
+        nonPersonalizedAds.putString("npa", "1");
+        AdRequest adRequest = new AdRequest.Builder()
+                .addNetworkExtrasBundle(AdMobAdapter.class, nonPersonalizedAds)
+                .build();
+        bannerAd.loadAd(adRequest);
 
         setContentView(root);
     }
